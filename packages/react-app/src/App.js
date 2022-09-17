@@ -1,7 +1,18 @@
 import { useQuery } from "@apollo/client";
 import { Contract } from "@ethersproject/contracts";
-import { shortenAddress, useCall, useEthers, useLookupAddress } from "@usedapp/core";
+import {
+  shortenAddress,
+  useCall,
+  useEthers,
+  useLookupAddress,
+} from "@usedapp/core";
 import React, { useEffect, useState } from "react";
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownDivider,
+} from "styled-dropdown-component";
 
 import { Body, Button, Container, Header, Image, Link } from "./components";
 import logo from "./ethereumLogo.png";
@@ -47,20 +58,35 @@ function WalletButton() {
   );
 }
 
+const supportedTokens = ["tMATIC", "tLPT", "stETH"];
+const supportedNetworks = ["Goerli", "Mumbai"];
+
 function App() {
   // Read more about useDapp on https://usedapp.io/
   const { error: contractCallError, value: tokenBalance } =
     useCall({
-       contract: new Contract(addresses.ceaErc20, abis.erc20),
-       method: "balanceOf",
-       args: ["0x3f8CB69d9c0ED01923F11c829BaE4D9a4CB6c82C"],
+      contract: new Contract(addresses.ceaErc20, abis.erc20),
+      method: "balanceOf",
+      args: ["0x3f8CB69d9c0ED01923F11c829BaE4D9a4CB6c82C"],
     }) ?? {};
 
   const { loading, error: subgraphQueryError, data } = useQuery(GET_TRANSFERS);
 
+  const [tokenSelectorHidden, setTokenSelectorHidden] = useState(true);
+  const [fromNetworkSelectorHidden, setFromNetworkSelectorHidden] = useState(
+    true
+  );
+  const [toNetworkSelectorHidden, setToNetworkSelectorHidden] = useState(true);
+  const [selectedToken, setSelectedToken] = useState();
+  const [selectedToNetwork, setSelectedToNetwork] = useState();
+  const [selectedFromNetwork, setSelectedFromNetwork] = useState();
+  const [sendValue, setSendValue] = useState("");
   useEffect(() => {
     if (subgraphQueryError) {
-      console.error("Error while querying subgraph:", subgraphQueryError.message);
+      console.error(
+        "Error while querying subgraph:",
+        subgraphQueryError.message
+      );
       return;
     }
     if (!loading && data && data.transfers) {
@@ -74,15 +100,129 @@ function App() {
         <WalletButton />
       </Header>
       <Body>
-        <Image src={logo} alt="ethereum-logo" />
-        <p>
-          Edit <code>packages/react-app/src/App.js</code> and save to reload.
-        </p>
-        <Link href="https://reactjs.org">
-          Learn React
-        </Link>
-        <Link href="https://usedapp.io/">Learn useDapp</Link>
-        <Link href="https://thegraph.com/docs/quick-start">Learn The Graph</Link>
+        <Dropdown>
+          <div>
+            Send
+            <Button
+              dropdownToggle
+              onClick={() => setTokenSelectorHidden(!tokenSelectorHidden)}
+            >
+              {selectedToken || "Token"}
+            </Button>
+          </div>
+          <DropdownMenu
+            hidden={tokenSelectorHidden}
+            toggle={() => setTokenSelectorHidden(!tokenSelectorHidden)}
+          >
+            {supportedTokens.map((token, i) => (
+              <DropdownItem
+                key={i}
+                onClick={() => {
+                  setTokenSelectorHidden(!tokenSelectorHidden);
+                  setSelectedToken(token);
+                }}
+              >
+                {token}
+              </DropdownItem>
+            ))}
+          </DropdownMenu>
+        </Dropdown>
+        <div
+          style={{
+            backgroundColor: "lightgray",
+            padding: 20,
+            margin: 10,
+            borderRadius: 10,
+          }}
+        >
+          From
+          <div style={{ display: "flex", flexDirection: "row" }}>
+            <Dropdown>
+              <div>
+                <Button
+                  dropdownToggle
+                  onClick={() =>
+                    setFromNetworkSelectorHidden(!fromNetworkSelectorHidden)
+                  }
+                >
+                  {selectedFromNetwork || "Select Network"}
+                </Button>
+              </div>
+              <DropdownMenu
+                hidden={fromNetworkSelectorHidden}
+                toggle={() =>
+                  setFromNetworkSelectorHidden(!fromNetworkSelectorHidden)
+                }
+              >
+                {supportedNetworks.map((network, i) => (
+                  <DropdownItem
+                    key={i}
+                    onClick={() => {
+                      setFromNetworkSelectorHidden(!fromNetworkSelectorHidden);
+                      setSelectedFromNetwork(network);
+                    }}
+                  >
+                    {network}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
+            <input
+              type="text"
+              value={sendValue}
+              placeholder="0"
+              onChange={(e) => setSendValue(e.target.value)}
+            />
+          </div>
+        </div>
+        <div
+          style={{
+            backgroundColor: "lightgray",
+            padding: 20,
+            margin: 10,
+            borderRadius: 10,
+          }}
+        >
+          To
+          <div style={{ display: "flex", flexDirection: "row" }}>
+            <Dropdown>
+              <div>
+                <Button
+                  dropdownToggle
+                  onClick={() =>
+                    setToNetworkSelectorHidden(!toNetworkSelectorHidden)
+                  }
+                >
+                  {selectedToNetwork || "Select Network"}
+                </Button>
+              </div>
+              <DropdownMenu
+                hidden={toNetworkSelectorHidden}
+                toggle={() =>
+                  setToNetworkSelectorHidden(!toNetworkSelectorHidden)
+                }
+              >
+                {supportedNetworks.map((network, i) => (
+                  <DropdownItem
+                    key={i}
+                    onClick={() => {
+                      setToNetworkSelectorHidden(!toNetworkSelectorHidden);
+                      setSelectedToNetwork(network);
+                    }}
+                  >
+                    {network}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
+            <input
+              type="text"
+              value={sendValue}
+              placeholder="0"
+              onChange={(e) => setSendValue(e.target.value)}
+            />
+          </div>
+        </div>
       </Body>
     </Container>
   );
