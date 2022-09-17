@@ -7,15 +7,14 @@ import {
   useLookupAddress,
 } from "@usedapp/core";
 import React, { useEffect, useState } from "react";
+
 import {
   Dropdown,
   DropdownItem,
   DropdownMenu,
-  DropdownDivider,
 } from "styled-dropdown-component";
 
 import { Body, Button, Container, Header, Image, Link } from "./components";
-import logo from "./ethereumLogo.png";
 
 import { addresses, abis } from "@my-app/contracts";
 import GET_TRANSFERS from "./graphql/subgraph";
@@ -62,7 +61,6 @@ const supportedTokens = ["tMATIC", "tLPT", "stETH"];
 const supportedNetworks = ["Goerli", "Mumbai"];
 
 function App() {
-  // Read more about useDapp on https://usedapp.io/
   const { error: contractCallError, value: tokenBalance } =
     useCall({
       contract: new Contract(addresses.ceaErc20, abis.erc20),
@@ -133,10 +131,17 @@ function App() {
             padding: 20,
             margin: 10,
             borderRadius: 10,
+            width: 350,
           }}
         >
           From
-          <div style={{ display: "flex", flexDirection: "row" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
             <Dropdown>
               <div>
                 <Button
@@ -181,10 +186,17 @@ function App() {
             padding: 20,
             margin: 10,
             borderRadius: 10,
+            width: 350,
           }}
         >
           To
-          <div style={{ display: "flex", flexDirection: "row" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
             <Dropdown>
               <div>
                 <Button
