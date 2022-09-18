@@ -1,8 +1,10 @@
 import { useQuery } from "@apollo/client";
 import { Contract } from "@ethersproject/contracts";
 import {
+  ERC20Interface,
   shortenAddress,
   useCall,
+  useContractFunction,
   useEthers,
   useLookupAddress,
 } from "@usedapp/core";
@@ -16,7 +18,7 @@ import {
 } from "styled-dropdown-component";
 
 import { Body, Button, Container, Header } from "./components";
-
+import { constants } from "ethers";
 import { addresses, abis } from "@my-app/contracts";
 import GET_TRANSFERS from "./graphql/subgraph";
 
@@ -68,6 +70,7 @@ const getBridgeContractAddress = (network) => {
 };
 
 const getChainId = (network) => (network === "Goerli" ? 5 : 80001);
+const getChainDomain = (network) => (network === "Goerli" ? 3331 : 9991);
 
 const getTokenContractAddress = (network, token) => {
   if (network === "Goerli") {
@@ -91,6 +94,7 @@ const getTokenContractAddress = (network, token) => {
 
 function App() {
   const { loading, error: subgraphQueryError, data } = useQuery(GET_TRANSFERS);
+  const { account } = useEthers();
 
   const [tokenSelectorHidden, setTokenSelectorHidden] = useState(true);
   const [fromNetworkSelectorHidden, setFromNetworkSelectorHidden] = useState(
@@ -131,18 +135,16 @@ function App() {
       { chainId: getChainId(selectedToNetwork) }
     ) ?? {};
 
-  useEffect(() => {
-    if (subgraphQueryError) {
-      console.error(
-        "Error while querying subgraph:",
-        subgraphQueryError.message
-      );
-      return;
-    }
-    if (!loading && data && data.transfers) {
-      console.log({ transfers: data.transfers });
-    }
-  }, [loading, subgraphQueryError, data]);
+  const { state: approveTx, send: approveToken } = useContractFunction(
+    getTokenContractAddress(selectedFromNetwork, selectedToken),
+    "approve"
+  );
+
+  const { send: sendToBridge } = useContractFunction(
+    getBridgeContractAddress(selectedFromNetwork),
+    "send",
+    {}
+  );
 
   return (
     <Container>
@@ -286,6 +288,30 @@ function App() {
               onChange={(e) => setSendValue(e.target.value)}
             />
           </div>
+        </div>
+        <div>
+          <Button
+            onClick={() => {
+              approveToken(
+                getBridgeContractAddress(selectedFromNetwork),
+                constants.MaxUint256
+              );
+            }}
+          >
+            Approve
+          </Button>
+          <Button
+            onClick={() => {
+              sendToBridge(
+                getTokenContractAddress(selectedFromNetwork, selectedToken),
+                sendValue,
+                getChainDomain(selectedToNetwork),
+                account
+              );
+            }}
+          >
+            Send
+          </Button>
         </div>
       </Body>
     </Container>

@@ -15,7 +15,7 @@ const config = {
   readOnlyChainId: Goerli.chainId,
   readOnlyUrls: {
     [Mumbai.chainId]:
-      "https://polygon-mumbai.infura.io/v3/" + INFURA_PROJECT_ID,
+      "https://polygon-mumbai.g.alchemy.com/v2/y5D9C_eB0aRhS4Sqa57ZdvD0EQ1HzLkO",
     [Goerli.chainId]: "https://goerli.infura.io/v3/" + INFURA_PROJECT_ID,
   },
   networks: [Mumbai, Goerli],
