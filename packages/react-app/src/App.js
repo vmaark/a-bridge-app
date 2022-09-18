@@ -7,6 +7,7 @@ import {
   useLookupAddress,
 } from "@usedapp/core";
 import React, { useEffect, useState } from "react";
+import bridgeLabel from "./a-bridge-label.png";
 
 import {
   Dropdown,
@@ -14,7 +15,7 @@ import {
   DropdownMenu,
 } from "styled-dropdown-component";
 
-import { Body, Button, Container, Header, Image, Link } from "./components";
+import { Body, Button, Container, Header } from "./components";
 
 import { addresses, abis } from "@my-app/contracts";
 import GET_TRANSFERS from "./graphql/subgraph";
@@ -60,14 +61,33 @@ function WalletButton() {
 const supportedTokens = ["tMATIC", "tLPT", "stETH"];
 const supportedNetworks = ["Goerli", "Mumbai"];
 
-function App() {
-  const { error: contractCallError, value: tokenBalance } =
-    useCall({
-      contract: new Contract(addresses.ceaErc20, abis.erc20),
-      method: "balanceOf",
-      args: ["0x3f8CB69d9c0ED01923F11c829BaE4D9a4CB6c82C"],
-    }) ?? {};
+const getBridgeContractAddress = (network) => {
+  return network === "Goerli"
+    ? addresses["aBridgeRouterGoerli"]
+    : addresses["aBridgeRouterMumbai"];
+};
 
+const getTokenContractAddress = (network, token) => {
+  if (network === "Goerli") {
+    if (token === "tMATIC") {
+      return addresses["tmaticGoerli"];
+    } else if (token === "tLPT") {
+      return addresses["tlptGoerli"];
+    } else {
+      return addresses["stethGoerli"];
+    }
+  } else {
+    if (token === "tMATIC") {
+      return addresses["tmaticMumbai"];
+    } else if (token === "tLPT") {
+      return addresses["tlptMumbai"];
+    } else {
+      return addresses["stethMumbai"];
+    }
+  }
+};
+
+function App() {
   const { loading, error: subgraphQueryError, data } = useQuery(GET_TRANSFERS);
 
   const [tokenSelectorHidden, setTokenSelectorHidden] = useState(true);
@@ -79,6 +99,24 @@ function App() {
   const [selectedToNetwork, setSelectedToNetwork] = useState();
   const [selectedFromNetwork, setSelectedFromNetwork] = useState();
   const [sendValue, setSendValue] = useState("");
+
+  const { error: fromContractCallError, value: fromTokenBalance } =
+    useCall({
+      contract: new Contract(addresses.ceaErc20, abis.erc20),
+      method: "balanceOf",
+      args: [
+        getTokenContractAddress(selectedFromNetwork ?? "Goerli", selectedToken),
+      ],
+    }) ?? {};
+  const { error: toContractCallError, value: toTokenBalance } =
+    useCall({
+      contract: new Contract(addresses.ceaErc20, abis.erc20),
+      method: "balanceOf",
+      args: [
+        getTokenContractAddress(selectedFromNetwork ?? "Goerli", selectedToken),
+      ],
+    }) ?? {};
+
   useEffect(() => {
     if (subgraphQueryError) {
       console.error(
@@ -98,6 +136,12 @@ function App() {
         <WalletButton />
       </Header>
       <Body>
+        <img
+          alt="Ethereum logo"
+          src={bridgeLabel}
+          style={{ paddingBottom: 50 }}
+        />
+
         <Dropdown>
           <div>
             Send
@@ -127,7 +171,7 @@ function App() {
         </Dropdown>
         <div
           style={{
-            backgroundColor: "lightgray",
+            backgroundColor: "#328fa8",
             padding: 20,
             margin: 10,
             borderRadius: 10,
@@ -173,6 +217,7 @@ function App() {
               </DropdownMenu>
             </Dropdown>
             <input
+              style={{ textAlign: "right" }}
               type="text"
               value={sendValue}
               placeholder="0"
@@ -182,7 +227,7 @@ function App() {
         </div>
         <div
           style={{
-            backgroundColor: "lightgray",
+            backgroundColor: "#328fa8",
             padding: 20,
             margin: 10,
             borderRadius: 10,
@@ -228,6 +273,7 @@ function App() {
               </DropdownMenu>
             </Dropdown>
             <input
+              style={{ textAlign: "right" }}
               type="text"
               value={sendValue}
               placeholder="0"

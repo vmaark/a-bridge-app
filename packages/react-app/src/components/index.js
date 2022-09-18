@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import bgImage from "../abridge.png";
 
 export const Body = styled.div`
   align-items: center;
@@ -25,6 +26,10 @@ export const Button = styled.button`
 
 export const Container = styled.div`
   background-color: #282c34;
+  background-image: url(${bgImage});
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   display: flex;
   flex-direction: column;
   height: calc(100vh);

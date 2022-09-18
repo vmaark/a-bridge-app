@@ -1,7 +1,7 @@
 import "./index.css";
 
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
-import { DAppProvider, Mainnet } from "@usedapp/core";
+import { DAppProvider, Goerli, Mumbai } from "@usedapp/core";
 import React from "react";
 import ReactDOM from "react-dom";
 
@@ -10,13 +10,16 @@ import App from "./App";
 // IMPORTANT, PLEASE READ
 // To avoid disruptions in your app, change this to your own Infura project id.
 // https://infura.io/register
-const INFURA_PROJECT_ID = "529670718fd74cd2a041466303daecd7";
+const INFURA_PROJECT_ID = "9dd97db4a45843e3aedb023f39ac2d35";
 const config = {
-  readOnlyChainId: Mainnet.chainId,
+  readOnlyChainId: Goerli.chainId,
   readOnlyUrls: {
-    [Mainnet.chainId]: "https://mainnet.infura.io/v3/" + INFURA_PROJECT_ID,
+    [Mumbai.chainId]:
+      "https://polygon-mumbai.infura.io/v3/" + INFURA_PROJECT_ID,
+    [Goerli.chainId]: "https://goerli.infura.io/v3/" + INFURA_PROJECT_ID,
   },
-}
+  networks: [Mumbai, Goerli],
+};
 
 // You should replace this url with your own and put it into a .env file
 // See all subgraphs: https://thegraph.com/explorer/
@@ -33,5 +36,5 @@ ReactDOM.render(
       </ApolloProvider>
     </DAppProvider>
   </React.StrictMode>,
-  document.getElementById("root"),
+  document.getElementById("root")
 );
