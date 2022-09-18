@@ -67,6 +67,8 @@ const getBridgeContractAddress = (network) => {
     : addresses["aBridgeRouterMumbai"];
 };
 
+const getChainId = (network) => (network === "Goerli" ? 5 : 80001);
+
 const getTokenContractAddress = (network, token) => {
   if (network === "Goerli") {
     if (token === "tMATIC") {
@@ -101,21 +103,33 @@ function App() {
   const [sendValue, setSendValue] = useState("");
 
   const { error: fromContractCallError, value: fromTokenBalance } =
-    useCall({
-      contract: new Contract(addresses.ceaErc20, abis.erc20),
-      method: "balanceOf",
-      args: [
-        getTokenContractAddress(selectedFromNetwork ?? "Goerli", selectedToken),
-      ],
-    }) ?? {};
+    useCall(
+      {
+        contract: new Contract(addresses.ceaErc20, abis.erc20),
+        method: "balanceOf",
+        args: [
+          getTokenContractAddress(
+            selectedFromNetwork ?? "Goerli",
+            selectedToken
+          ),
+        ],
+      },
+      { chainId: getChainId(selectedFromNetwork) }
+    ) ?? {};
   const { error: toContractCallError, value: toTokenBalance } =
-    useCall({
-      contract: new Contract(addresses.ceaErc20, abis.erc20),
-      method: "balanceOf",
-      args: [
-        getTokenContractAddress(selectedFromNetwork ?? "Goerli", selectedToken),
-      ],
-    }) ?? {};
+    useCall(
+      {
+        contract: new Contract(addresses.ceaErc20, abis.erc20),
+        method: "balanceOf",
+        args: [
+          getTokenContractAddress(
+            selectedFromNetwork ?? "Goerli",
+            selectedToken
+          ),
+        ],
+      },
+      { chainId: getChainId(selectedToNetwork) }
+    ) ?? {};
 
   useEffect(() => {
     if (subgraphQueryError) {
@@ -147,20 +161,20 @@ function App() {
             Send
             <Button
               dropdownToggle
-              onClick={() => setTokenSelectorHidden(!tokenSelectorHidden)}
+              onClick={() => setTokenSelectorHidden((prev) => !prev)}
             >
               {selectedToken || "Token"}
             </Button>
           </div>
           <DropdownMenu
             hidden={tokenSelectorHidden}
-            toggle={() => setTokenSelectorHidden(!tokenSelectorHidden)}
+            toggle={() => setTokenSelectorHidden((prev) => !prev)}
           >
             {supportedTokens.map((token, i) => (
               <DropdownItem
                 key={i}
                 onClick={() => {
-                  setTokenSelectorHidden(!tokenSelectorHidden);
+                  setTokenSelectorHidden((prev) => !prev);
                   setSelectedToken(token);
                 }}
               >
@@ -190,24 +204,20 @@ function App() {
               <div>
                 <Button
                   dropdownToggle
-                  onClick={() =>
-                    setFromNetworkSelectorHidden(!fromNetworkSelectorHidden)
-                  }
+                  onClick={() => setFromNetworkSelectorHidden((prev) => !prev)}
                 >
                   {selectedFromNetwork || "Select Network"}
                 </Button>
               </div>
               <DropdownMenu
                 hidden={fromNetworkSelectorHidden}
-                toggle={() =>
-                  setFromNetworkSelectorHidden(!fromNetworkSelectorHidden)
-                }
+                toggle={() => setFromNetworkSelectorHidden((prev) => !prev)}
               >
                 {supportedNetworks.map((network, i) => (
                   <DropdownItem
                     key={i}
                     onClick={() => {
-                      setFromNetworkSelectorHidden(!fromNetworkSelectorHidden);
+                      setFromNetworkSelectorHidden((prev) => !prev);
                       setSelectedFromNetwork(network);
                     }}
                   >
@@ -246,24 +256,20 @@ function App() {
               <div>
                 <Button
                   dropdownToggle
-                  onClick={() =>
-                    setToNetworkSelectorHidden(!toNetworkSelectorHidden)
-                  }
+                  onClick={() => setToNetworkSelectorHidden((prev) => !prev)}
                 >
                   {selectedToNetwork || "Select Network"}
                 </Button>
               </div>
               <DropdownMenu
                 hidden={toNetworkSelectorHidden}
-                toggle={() =>
-                  setToNetworkSelectorHidden(!toNetworkSelectorHidden)
-                }
+                toggle={() => setToNetworkSelectorHidden((prev) => !prev)}
               >
                 {supportedNetworks.map((network, i) => (
                   <DropdownItem
                     key={i}
                     onClick={() => {
-                      setToNetworkSelectorHidden(!toNetworkSelectorHidden);
+                      setToNetworkSelectorHidden((prev) => !prev);
                       setSelectedToNetwork(network);
                     }}
                   >
